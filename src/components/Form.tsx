@@ -18,7 +18,7 @@ const Form = () => {
 
 
     const [showPwd,setShowPwd] = useState(false);
-
+    const [loading,setLoading] = useState(false)
     const {currentExpression,updateExpresssion,currentUrlExpression} = useMoveGirl();
 
 
@@ -44,7 +44,7 @@ const Form = () => {
     }
 
     const coverEyes = () =>{
-        console.log(currentExpression)
+  
         if(currentExpression === 'happyCoverEyesMove' || currentExpression == 'happyOpenEyesMove'){
             return;
         }
@@ -71,6 +71,7 @@ const Form = () => {
 
 
         if(errors.username){
+            
             if(showPwd && currentExpression === 'happyOpenEyesMove'){
                 updateExpresssion('angryCoverEyes');
                 return;
@@ -110,7 +111,7 @@ const Form = () => {
                 updateExpresssion('happyOpenEyes');
             }
             // cuando no se muestra
-            if(currentExpression !== 'happyCoverEyesMove'){
+            if(currentExpression === 'happyCoverEyesMove'){
                 updateExpresssion('happyCoverEyes')
             }
         }
@@ -118,16 +119,38 @@ const Form = () => {
 
     }, [password,errors.password]);
 
+
+    useEffect(()=>{
+        
+        // cuando no hay errores, pondra cara de excitada
+        if(!errors.username && !errors.password){
+            if(username && password){
+                if(password.length !== 0 && username.length !== 0){
+                    console.log('todo ok')
+                    updateExpresssion('excited');
+                }
+            }
+        }
+
+    },[password,username])
+
     const submit = (data: any) => {
+        setLoading(true);
         console.log('enviado')
         console.log(data)
+        
+        setTimeout(()=>{
+            setLoading(false);
+            alert(JSON.stringify(data))
+        },600)
+
     }
 
 
     return (
 
         <div className='container'>
-
+            <h1 className='container__title'>Login</h1>
             <div className="container__image">
                 {currentUrlExpression && (
                     <img
@@ -142,9 +165,8 @@ const Form = () => {
 
                 {/* Username */}
                 <input
-                    className={`container__form__field ${ 
-                        errors.username ? 'container__form__field--error' : ''
-                    }`} 
+                    className={`container__form__field ${ errors.username ? 'container__form__field--error' : ''}`}
+                    disabled={loading}
                     type="text"
                     placeholder='Username'
                     onFocus={withCoverEyes}
@@ -152,6 +174,14 @@ const Form = () => {
                         required:{
                             value:true,
                             message:'Username is required'
+                        },
+                        minLength: {
+                            value: 4,
+                            message: 'Username must be at least 4 characters long'
+                        },
+                        maxLength: {
+                            value: 20,
+                            message: 'Username cannot exceed 20 characters'
                         },
                         validate:(value)=>{
                             if(value === 'admin' || value === 'root' || value === 'santy'){
@@ -166,7 +196,7 @@ const Form = () => {
                         errors.username 
                             &&
                         <div className='form__error__content'>
-                            <img className='form__error__icon' src="src/assets/warningIcon.png" alt="" />
+                            <img className='form__error__icon' src="src/assets/errorIcon.png" alt="" />
                             <p> { String(errors.username.message)} </p>
                         </div>
 
@@ -176,12 +206,15 @@ const Form = () => {
                 <div className='container__form__field__password'>
                     {/* Password */}
                     <input
-                        className={`container__form__field ${ 
-                            errors.password ? 'container__form__field--error' : ''
-                        }`} 
+                        className={`container__form__field 
+                            ${errors.password?.type === 'required' || errors.password?.type === 'pattern' ? 'container__form__field--error' : ''}
+                            ${errors.password?.type === 'minLength' || errors.password?.type == 'maxLength' ? 'container__form__field--warning' : ''} 
+                            `
+                        } 
                         type={ showPwd ? 'text':'password'}
                         placeholder='Password'
                         onFocus={coverEyes}
+                        disabled={loading}
                         {...register('password',{
                             required:{
                                 value:true,
@@ -210,21 +243,30 @@ const Form = () => {
                 </div>
 
                 {/* Errors */}
-                <span className='container__form__error'>
+                <span className={`container__form__error ${errors.password?.type === 'minLength' || errors.password?.type == 'maxLength' ? 'container__form__error--warning' : ''}`
+                } 
+                >
                     {
                         errors.password 
                             &&
                         <div className='form__error__content'>
-                            <img className='form__error__icon' src="src/assets/warningIcon.png" alt="" />
+                            <img className='form__error__icon' src={`src/assets/${ errors.password.type === 'required' || errors.password.type === 'pattern' ? 'errorIcon.png' : 'warningIcon.png' }`} alt="" />
                             <p> { String(errors.password.message)} </p>
                         </div>
 
                     }
                 </span>
 
-                <button 
+                <button
+                    disabled={ loading }
                     className='container__form__button '
-                >Submit</button>
+                >
+                    {
+                        loading 
+                        ? <img className='container__form__button__loading' src="src/assets/loading.svg" alt="" />
+                        : 'Submit'
+                    }
+                </button>
 
             </form>
             {/* <DevTool control={control} /> */}

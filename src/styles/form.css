@@ -6,6 +6,13 @@
     place-items: center;
     gap: 2rem;
 }
+
+.container__title{
+    font-size: 2rem;
+    color: white;
+    text-transform: uppercase;
+    font-weight: 800;
+}
 /* image */
 .container__image {
     position: relative;
@@ -43,7 +50,7 @@
     line-height: 25px;
     padding:  8px 16px;
     border-radius: 6px;
-    color:  #99A3BA;
+    color:  #6d83b5;
     border: 2px solid #CDD9ED;
     transition: border .3s ease;
     background: #fff;
@@ -56,8 +63,13 @@
     border-color:var(--primary-color) ;
     box-shadow: 0px 0px 53px -25px #62e6f0;
 }
-
-
+.container__form__field:disabled,
+.container__form__field__password input.container__form__field:disabled{
+    background-color: #96999d;
+    border-color: #c1c1c1;
+    cursor: no-drop;
+    color: white;
+}
 /* password input */
 .container__form__field__password{
     align-items: center;
@@ -67,6 +79,7 @@
 .container__form__field__password input.container__form__field{
     border-radius:6px 0 0 6px ;
 }
+
 .form__field_password{
     display: grid;
     place-content: center;
@@ -87,11 +100,23 @@
     box-shadow: 0px 0px 43px -18px var(--error-color);
     border-color:var(--error-color) ;
     background-color:#f37c76 ;
+    color: white;
 }
 .container__form__field--error:focus{
     
     box-shadow: 0px 0px 43px -18px var(--error-color);
     border-color:var(--error-color) ;
+}
+.container__form__field--warning{
+    animation: shake-top 0.3s ease-in-out both;
+    box-shadow: 0px 0px 43px -18px var(--warning-color);
+    border-color:var(--warning-color) ;
+    background-color: rgba(236, 225, 165, 0.765);
+    color: white;
+}
+.container__form__field--warning:focus{
+    box-shadow: 0px 0px 43px -18px var(--warning-color);
+    border-color:var(--warning-color) ;
 }
 .container__form__error{
     height: .6rem;
@@ -99,6 +124,9 @@
     font-size: .7rem;
     display: grid;
     place-content: center;
+}
+.container__form__error--warning{
+    color: var(--warning-color);
 }
 .form__error__content{
     gap: .3rem;
@@ -121,8 +149,14 @@
     background-color: var(--primary-color);
     cursor: pointer;
 }
-
-
+img.container__form__button__loading{
+    height: 1.8rem;
+    width: 1.8rem;
+}
+.container__form__button:disabled{
+    background-color: #1b3445;
+    cursor: progress;
+}
 /**
  * ----------------------------------------
  * animation shake-top
