@@ -2,52 +2,47 @@
 import EyeIcon from '../assets/icons/Eye.svg';
 import EyeOffIcon from '../assets/icons/EyeOff.svg';
 
-import { useEffect, useState } from 'react';
+import { FC, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import '../styles/form.css'
 import useMoveGirl from '../hooks/useMoveGirl';
 
-const Form = () => {
-    // Form
-    const form = useForm();
-    const { register, control, handleSubmit, formState, reset, watch } = form;
-    const { errors } = formState;
+interface FormData {
+    username: string;
+    password: string;
+}
+
+const Form :FC = ()  => {
     
+    // Form
+    const { register, handleSubmit, formState, reset, watch } = useForm<FormData>();
+    const { errors } = formState;
+    // inputs value
     const username = watch('username');
     const password = watch('password');
 
 
-    const [showPwd,setShowPwd] = useState(false);
-    const [loading,setLoading] = useState(false)
+    const [showPwd,setShowPwd] = useState<boolean>(false);
+    const [loading,setLoading] = useState<boolean>(false)
     const {currentExpression,updateExpresssion,currentUrlExpression} = useMoveGirl();
 
-
   
-    const handleEye =()=>{
-        console.log('eye ',currentExpression)
-        
+    const handleEye =():void=>{
         if(showPwd){
-            if( currentExpression === 'angryCoverEyes'){
-                return;
-            }
+            if( currentExpression === 'angryCoverEyes') return;
             updateExpresssion('happyCoverEyesMove')
+            
         }else{
-            if(errors.password && currentExpression === 'angryOpenEyes'){
-                return;
-            }
+            if(errors.password && currentExpression === 'angryOpenEyes') return;
             updateExpresssion('happyOpenEyesMove')
         }
-
         setShowPwd((prev)=> !prev);
-
-
     }
 
-    const coverEyes = () =>{
-  
-        if(currentExpression === 'happyCoverEyesMove' || currentExpression == 'happyOpenEyesMove'){
-            return;
-        }
+    const onFocusInputPassword = ():void =>{
+        if(currentExpression === 'happyCoverEyesMove' 
+            || currentExpression == 'happyOpenEyesMove'
+        )return;
         if(errors.password){
             if(showPwd){
                 updateExpresssion('angryOpenEyes')
@@ -55,16 +50,13 @@ const Form = () => {
                 updateExpresssion('angryCoverEyes')
             }
         }
+
         updateExpresssion('happyCoverEyesMove')
     }
-    
-    const withCoverEyes = () => {
-        if(showPwd && currentExpression === 'happyOpenEyesMove'){
-            return;
-        }
-        if(!errors.username){
-            updateExpresssion('neutral')
-        }
+
+    const onFocusInputUsername = ():void => {
+        if(showPwd && currentExpression === 'happyOpenEyesMove')return;
+        if(!errors.username) updateExpresssion('neutral')
     }
 
     useEffect(() => {
@@ -87,7 +79,6 @@ const Form = () => {
         
 
     }, [username,errors.username]);
-
     useEffect(() => {
         
         // si hay un error
@@ -119,14 +110,13 @@ const Form = () => {
 
     }, [password,errors.password]);
 
-
     useEffect(()=>{
         
         // cuando no hay errores, pondra cara de excitada
         if(!errors.username && !errors.password){
             if(username && password){
+                // si no hay erores y existe los dos inputs -> todo OK
                 if(password.length !== 0 && username.length !== 0){
-                    console.log('todo ok')
                     updateExpresssion('excited');
                 }
             }
@@ -134,14 +124,16 @@ const Form = () => {
 
     },[password,username])
 
-    const submit = (data: any) => {
+    const submit = (data: any):void => {
+        
         setLoading(true);
-        console.log('enviado')
         console.log(data)
         
         setTimeout(()=>{
             setLoading(false);
             alert(JSON.stringify(data))
+            // limpia los inputs
+            reset();
         },600)
 
     }
@@ -150,7 +142,9 @@ const Form = () => {
     return (
 
         <div className='container'>
+
             <h1 className='container__title'>Login</h1>
+            {/* Imagen de la chica */}
             <div className="container__image">
                 {currentUrlExpression && (
                     <img
@@ -169,7 +163,7 @@ const Form = () => {
                     disabled={loading}
                     type="text"
                     placeholder='Username'
-                    onFocus={withCoverEyes}
+                    onFocus={onFocusInputUsername}
                     {...register('username',{
                         required:{
                             value:true,
@@ -190,7 +184,7 @@ const Form = () => {
                         }
                     })}
                 />
-                {/* Errors */}
+                {/* Errors username*/}
                 <span className='container__form__error'>
                     {
                         errors.username 
@@ -213,7 +207,7 @@ const Form = () => {
                         } 
                         type={ showPwd ? 'text':'password'}
                         placeholder='Password'
-                        onFocus={coverEyes}
+                        onFocus={onFocusInputPassword}
                         disabled={loading}
                         {...register('password',{
                             required:{
@@ -235,14 +229,14 @@ const Form = () => {
                             }
                         })}
                     />
+                    {/* contenedor eye */}
                     <div onClick={handleEye} className="form__field_password">
-
                         <img className='field__password__icon' src={ showPwd ? EyeOffIcon : EyeIcon} alt="" />
-
                     </div>
+
                 </div>
 
-                {/* Errors */}
+                {/* Errors password*/}
                 <span className={`container__form__error ${errors.password?.type === 'minLength' || errors.password?.type == 'maxLength' ? 'container__form__error--warning' : ''}`
                 } 
                 >
@@ -256,7 +250,8 @@ const Form = () => {
 
                     }
                 </span>
-
+                
+                {/* Button */}
                 <button
                     disabled={ loading }
                     className='container__form__button '
