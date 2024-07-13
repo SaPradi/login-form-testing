@@ -1,273 +1,115 @@
+import React, { useState } from 'react';
+import useCustomForm from '../hooks/useForm';
+import '../styles/form.css';
 
-import EyeIcon from '../assets/icons/Eye.svg';
-import EyeOffIcon from '../assets/icons/EyeOff.svg';
-
-import { FC, useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
-import '../styles/form.css'
-import useMoveGirl from '../hooks/useMoveGirl';
+import Tittle from './Tittle';
 
 interface FormData {
     username: string;
     password: string;
 }
 
-const Form :FC = ()  => {
-    
-    // Form
-    const { register, handleSubmit, formState, reset, watch } = useForm<FormData>();
-    const { errors } = formState;
-    // inputs value
-    const username = watch('username');
-    const password = watch('password');
-
-
-    const [showPwd,setShowPwd] = useState<boolean>(false);
-    const [loading,setLoading] = useState<boolean>(false)
-    const {currentExpression,updateExpresssion,currentUrlExpression} = useMoveGirl();
-
-  
-    const handleEye =():void=>{
-        if(showPwd){
-            if( currentExpression === 'angryCoverEyes') return;
-            updateExpresssion('happyCoverEyesMove')
-            
-        }else{
-            if(errors.password && currentExpression === 'angryOpenEyes') return;
-            updateExpresssion('happyOpenEyesMove')
-        }
-        setShowPwd((prev)=> !prev);
+const validate = (values: FormData) => {
+    const errors: { [key: string]: string | undefined } = {};
+    if (!values.username) {
+        errors.username = 'Username is required';
+    } else if (values.username.length < 4) {
+        errors.username = 'Username must be at least 4 characters long';
+    } else if (values.username.length > 20) {
+        errors.username = 'Username cannot exceed 20 characters';
+    } else if (['admin', 'root', 'santy'].includes(values.username)) {
+        errors.username = 'Username not available!';
     }
 
-    const onFocusInputPassword = ():void =>{
-        if(currentExpression === 'happyCoverEyesMove' 
-            || currentExpression == 'happyOpenEyesMove'
-        )return;
-        if(errors.password){
-            if(showPwd){
-                updateExpresssion('angryOpenEyes')
-            }else{
-                updateExpresssion('angryCoverEyes')
-            }
-        }
-
-        updateExpresssion('happyCoverEyesMove')
+    if (!values.password) {
+        errors.password = 'Password is required';
+    } else if (values.password.length < 8) {
+        errors.password = 'Password must be at least 8 characters long';
+    } else if (values.password.length > 20) {
+        errors.password = 'Password cannot exceed 20 characters';
+    } else if (!/^(?=.*[!@#$%^&*()_+{}\[\]:;<>,.?~\\/-])[A-Za-z\d!@#$%^&*()_+{}\[\]:;<>,.?~\\/-]{8,20}$/.test(values.password)) {
+        errors.password = 'Password must need contain one special character';
     }
 
-    const onFocusInputUsername = ():void => {
-        if(showPwd && currentExpression === 'happyOpenEyesMove')return;
-        if(!errors.username) updateExpresssion('neutral')
-    }
+    return errors;
+};
 
-    useEffect(() => {
+const Form: React.FC = () => {
+    const { values, errors, handleChange, handleSubmit, reset } = useCustomForm({ username: '', password: '' }, validate);
 
+    const [showPwd, setShowPwd] = useState<boolean>(false);
+    const [loading,setLoading] = useState<boolean>(false);
 
-        if(errors.username){
-            
-            if(showPwd && currentExpression === 'happyOpenEyesMove'){
-                updateExpresssion('angryCoverEyes');
-                return;
-            }
-            updateExpresssion('angry');
-            
-        }else if(showPwd && currentExpression === 'happyOpenEyesMove'){
-            return;
-        }
-        else{
-            updateExpresssion('happy')
-        }
-        
+    const handleEye = (): void => {
+        setShowPwd((prev) => !prev);
+    };
 
-    }, [username,errors.username]);
-    useEffect(() => {
-        
-        // si hay un error
-        if(errors.password){
-            //  cuando hay un error y la contrasena se muestra y tiene los ojos abiertos
-            if(showPwd && currentExpression === 'happyOpenEyesMove'){
-                // actualiza la cara enojada con los cojos 
-                updateExpresssion('angryOpenEyes');
-                return;
-            }
-            // si la contrasena esta oculta y tiene los ojos tapados
-            if(currentExpression === 'happyCoverEyesMove'){
-                updateExpresssion('angryCoverEyes');
-                return;
-            }
-        }
-        // si no hay errores
-        else{
-            //  cuando la contrasena se muestra
-            if(showPwd && currentExpression !== 'happyOpenEyesMove' ){
-                updateExpresssion('happyOpenEyes');
-            }
-            // cuando no se muestra
-            if(currentExpression === 'happyCoverEyesMove'){
-                updateExpresssion('happyCoverEyes')
-            }
-        }
-
-
-    }, [password,errors.password]);
-
-    useEffect(()=>{
-        
-        // cuando no hay errores, pondra cara de excitada
-        if(!errors.username && !errors.password){
-            if(username && password){
-                // si no hay erores y existe los dos inputs -> todo OK
-                if(password.length !== 0 && username.length !== 0){
-                    updateExpresssion('excited');
-                }
-            }
-        }
-
-    },[password,username])
-
-    const submit = (data: any):void => {
-        
+    const submit = (): void => {
         setLoading(true);
-        console.log(data)
-        
-        setTimeout(()=>{
-            setLoading(false);
-            alert(JSON.stringify(data))
-            // limpia los inputs
+        console.log(values);
+        setTimeout(() => {
+            alert(JSON.stringify(values));
             reset();
-        },600)
-
-    }
-
+            setLoading(false);
+        }, 600);
+    };
 
     return (
-
         <div className='container'>
-
-            <h1 className='container__title'>Login</h1>
-            {/* Imagen de la chica */}
-            <div className="container__image">
-                {currentUrlExpression && (
-                    <img
-                        src={currentUrlExpression}
-                        alt="OhImage"
-                        className="image"
-                    />
-                )}
-            </div>
-            {/* Form */}
+            <Tittle />
             <form onSubmit={handleSubmit(submit)} className='container__form'>
-
-                {/* Username */}
                 <input
-                    className={`container__form__field ${ errors.username ? 'container__form__field--error' : ''}`}
+                    aria-label="username"
+                    className={`container__form__field ${errors.username ? 'container__form__field--error' : ''}`}
                     disabled={loading}
                     type="text"
+                    id='username'
+                    name='username'
                     placeholder='Username'
-                    onFocus={onFocusInputUsername}
-                    {...register('username',{
-                        required:{
-                            value:true,
-                            message:'Username is required'
-                        },
-                        minLength: {
-                            value: 4,
-                            message: 'Username must be at least 4 characters long'
-                        },
-                        maxLength: {
-                            value: 20,
-                            message: 'Username cannot exceed 20 characters'
-                        },
-                        validate:(value)=>{
-                            if(value === 'admin' || value === 'root' || value === 'santy'){
-                                return 'Username not available!'
-                            }
-                        }
-                    })}
+                    value={values.username}
+                    onChange={handleChange}
                 />
-                {/* Errors username*/}
                 <span className='container__form__error'>
-                    {
-                        errors.username 
-                            &&
+                    {errors.username && (
                         <div className='form__error__content'>
                             <img className='form__error__icon' src="src/assets/errorIcon.png" alt="" />
-                            <p> { String(errors.username.message)} </p>
+                            <p>{errors.username}</p>
                         </div>
-
-                    }
+                    )}
                 </span>
-                
-                <div className='container__form__field__password'>
-                    {/* Password */}
-                    <input
-                        className={`container__form__field 
-                            ${errors.password?.type === 'required' || errors.password?.type === 'pattern' ? 'container__form__field--error' : ''}
-                            ${errors.password?.type === 'minLength' || errors.password?.type == 'maxLength' ? 'container__form__field--warning' : ''} 
-                            `
-                        } 
-                        type={ showPwd ? 'text':'password'}
-                        placeholder='Password'
-                        onFocus={onFocusInputPassword}
-                        disabled={loading}
-                        {...register('password',{
-                            required:{
-                                value:true,
-                                message:'Password is required'
-                            },
-                            minLength: {
-                                value: 8,
-                                message: 'Password must be at least 8 characters long'
-                            },
-                            maxLength: {
-                                value: 20,
-                                message: 'Password cannot exceed 20 characters'
-                            },
-                            pattern: {
-                                value: /^(?=.*[!@#$%^&*()_+{}\[\]:;<>,.?~\\/-])[A-Za-z\d!@#$%^&*()_+{}\[\]:;<>,.?~\\/-]{8,20}$/,
-                                message: 'Password must need contain one special character'
-                    
-                            }
-                        })}
-                    />
-                    {/* contenedor eye */}
-                    <div onClick={handleEye} className="form__field_password">
-                        <img className='field__password__icon' src={ showPwd ? EyeOffIcon : EyeIcon} alt="" />
-                    </div>
 
+                <div className='container__form__field__password'>
+                    <input
+                        aria-label="password"
+                        className={`container__form__field ${errors.password ? 'container__form__field--error' : ''}`}
+                        type={showPwd ? 'text' : 'password'}
+                        placeholder='Password'
+                        disabled={loading}
+                        id="password"
+                        name='password'
+                        value={values.password}
+                        onChange={handleChange}
+                    />
+                    <div onClick={handleEye} className="form__field_password">
+                        <img className='field__password__icon' src={showPwd ? 'src/assets/IconoirEyeClosed.png' : 'src/assets/IconoirEye.png'} alt="" />
+                    </div>
                 </div>
 
-                {/* Errors password*/}
-                <span className={`container__form__error ${errors.password?.type === 'minLength' || errors.password?.type == 'maxLength' ? 'container__form__error--warning' : ''}`
-                } 
-                >
-                    {
-                        errors.password 
-                            &&
+                <span className={`container__form__error ${errors.password ? 'container__form__error--warning' : ''}`}>
+                    {errors.password && (
                         <div className='form__error__content'>
-                            <img className='form__error__icon' src={`src/assets/${ errors.password.type === 'required' || errors.password.type === 'pattern' ? 'errorIcon.png' : 'warningIcon.png' }`} alt="" />
-                            <p> { String(errors.password.message)} </p>
+                            <img className='form__error__icon' src={`src/assets/errorIcon.png`} alt="" />
+                            <p>{errors.password}</p>
                         </div>
-
-                    }
+                    )}
                 </span>
-                
-                {/* Button */}
-                <button
-                    disabled={ loading }
-                    className='container__form__button '
-                >
-                    {
-                        loading 
-                        ? <img className='container__form__button__loading' src="src/assets/loading.svg" alt="" />
-                        : 'Submit'
-                    }
+
+                <button disabled={loading} className='container__form__button' name='submit_button'>
+                    {loading ? <img className='container__form__button__loading' src="src/assets/loading.svg" alt="" /> : 'Submit'}
                 </button>
-
             </form>
-            {/* <DevTool control={control} /> */}
         </div>
-       
-    )
-}
+    );
+};
 
-export default Form
+export default Form;
